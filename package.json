@@ -15,5 +15,7 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.3"
-  }
+  },
+  "repository": "https://github.com/cocojerry1/Nodejs22.git",
+  "author": "cocojerry1 <ymchoi526@gmail.com>"
 }

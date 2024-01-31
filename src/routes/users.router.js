@@ -59,6 +59,8 @@ router.post('/sign-in', async (req, res, next) => {
   const { email, password } = req.body;
   const user = await prisma.users.findFirst({ where: { email } });
 
+  
+
   if (!user)
     return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
   // 입력받은 사용자의 비밀번호와 데이터베이스에 저장된 비밀번호를 비교합니다.
@@ -71,6 +73,7 @@ router.post('/sign-in', async (req, res, next) => {
       userId: user.userId,
     },
     'custom-secret-key',
+    { expiresIn: '12h' }
   );
 
   // authotization 쿠키에 Berer 토큰 형식으로 JWT를 저장합니다.
