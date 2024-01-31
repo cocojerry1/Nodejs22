@@ -29,26 +29,38 @@ router.post('/posts', authMiddleware, async (req, res, next) => {
 
 /** 게시글 목록 조회 API **/
 router.get('/posts', async (req, res, next) => {
+  const { orderKey = 'createdAt', orderValue = 'DESC' } = req.query;
+  console.log(orderKey, orderValue);
+
+  const normalizedOrderValue = (orderValue && orderValue.toUpperCase() === 'ASC') ? 'asc' : 'desc';
+
+  let orderByCondition = {};
+  orderByCondition[orderKey] = normalizedOrderValue;
+
+  try {
     const posts = await prisma.posts.findMany({
-        select: {
-            content:true,
-            postId:true,
-            title:true,
-            status:true,
-            createdAt :true,
-          user: {
-            select: {
-                name:true,
-            },
+      select: {
+        content: true,
+        postId: true,
+        title: true,
+        status: true,
+        createdAt: true,
+        user: {
+          select: {
+            name: true,
           },
         },
-        orderBy: {
-            createdAt: 'desc', // 게시글을 최신순으로 정렬합니다.
-          },
-      })
-  
+      },
+      orderBy: orderByCondition,
+    });
+
     return res.status(200).json({ data: posts });
-  });
+  } catch (error) {
+    next(error); // 에러 처리
+  }
+});
+
+
 
 
 /** 게시글 상세 조회 API **/
