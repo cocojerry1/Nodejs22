@@ -87,70 +87,59 @@ router.get('/posts/:postId', async (req, res, next) => {
     return res.status(200).json({ data: post });
   });
 
-  // 게시물 수정하기
+// 게시물 수정하기
+router.patch('/posts/:postId', authMiddleware, asyncMiddleware(async (req, res) => {
+  const { postId } = req.params;
+  const { title, content, status } = req.body;
+  
+  if (!req.user || !req.user.userId) {
+    return res.status(401).json({ errorMessage: "인증 정보가 없습니다." });
+  }
 
-  router.patch('/posts/:postId', authMiddleware,asyncMiddleware(async (req, res) => {
-    const { postId } = req.params;
-    const { title, content, status } = req.body;
-   
+  const post = await prisma.posts.findUnique({ where: { postId: Number(postId) } });
 
-    if (!req.user || !req.user.userId) {
-      return res.status(401).json({ errorMessage: "인증 정보가 없습니다." });
-    }
-    const userId = req.user.userId;
-    
-
-      const post = await prisma.posts.findUnique({ where: { postId: Number(postId) } });
   if (!post) {
     return res.status(404).json({ errorMessage: "게시글 조회에 실패하였습니다." });
   }
-  if (post.userId !== userId) {
+
+  // 관리자 또는 게시물 소유자만 수정 가능하도록 검사
+  if (post.userId !== req.user.userId && req.user.role !== "gen0") {
     return res.status(403).json({ errorMessage: "수정 권한이 없습니다." });
   }
 
+  // 게시물 수정 로직
+  const updatedPost = await prisma.posts.update({
+    where: { postId: Number(postId) },
+    data: { title, content, status },
+  });
 
-    if (title) post.title = title;
-    if (content) post.content = content;
-    if (status) post.status = status;
-
-
-    const updatepost = {
-      title: post.title,
-      content:post.content,
-      status: post.status,
-    };
-
-    return res.status(200).json({ updatepost });
-  }));
+  return res.status(200).json({ message: "게시물이 수정되었습니다.", updatedPost });
+}));
 
   
   // 게시물 삭제하기
-
-  router.delete('/posts/:postId', authMiddleware,asyncMiddleware(async (req, res) => {
-    const { postId } = req.params;
-   
-
-    if (!req.user || !req.user.userId) {
-      return res.status(401).json({ errorMessage: "인증 정보가 없습니다." });
-    }
-    const userId = req.user.userId;
-    
-
-      const post = await prisma.posts.findUnique({ where: { postId: Number(postId) } });
-  if (!post) {
-    return res.status(404).json({ errorMessage: "이력서 조회에 실패하였습니다." });
+router.delete('/posts/:postId', authMiddleware, asyncMiddleware(async (req, res) => {
+  const { postId } = req.params;
+  
+  if (!req.user || !req.user.userId) {
+    return res.status(401).json({ errorMessage: "인증 정보가 없습니다." });
   }
-  if (post.userId !== userId) {
-    return res.status(403).json({ errorMessage: "수정 권한이 없습니다." });
+
+  const post = await prisma.posts.findUnique({ where: { postId: Number(postId) } });
+
+  if (!post) {
+    return res.status(404).json({ errorMessage: "게시글 조회에 실패하였습니다." });
+  }
+
+  // 관리자 또는 게시물 소유자만 삭제 가능하도록 검사
+  if (post.userId !== req.user.userId && req.user.role !== "gen0") {
+    return res.status(403).json({ errorMessage: "삭제 권한이 없습니다." });
   }
 
   await prisma.posts.delete({ where: { postId: Number(postId) } });
-
   
-
-  
-    return res.status(200).json({  });
-  }));
+  return res.status(200).json({ message: "게시물이 삭제되었습니다." });
+}));
 
 
 export default router;

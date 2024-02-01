@@ -6,7 +6,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:shtpdnd11@express-database.c3k6iyg6eh3e.ap-northeast-2.rds.amazonaws.com:3306/community_hub"
+  url      = env("DATABASE_URL")
 }
 
 model Users {
@@ -15,10 +15,17 @@ model Users {
   password  String   @map("password")
   confirm   String   @map("confirm")
   name      String   @map("name")
+  role      role     @default(gen1)
+  acsToken  String   @default("")
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
   posts     Posts[] // 사용자(Users) 테이블과 게시글(Posts) 테이블이 1:N 관계를 맺습니다.
   @@map("Users")
+}
+
+enum role {
+  gen1
+  gen0
 }
 
 model Posts {

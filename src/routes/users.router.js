@@ -10,7 +10,7 @@ const router = express.Router();
 
 /** 사용자 회원가입 API **/
 router.post('/sign-up', async (req, res, next) => {
-  const { email, password, name, confirm } = req.body;
+  const { email, password, name, confirm, role } = req.body;
   const isExistUser = await prisma.users.findFirst({
     where: {
       email,
@@ -36,7 +36,7 @@ router.post('/sign-up', async (req, res, next) => {
     data: {
       email,
       password: hashedPassword,
-      name,confirm // 암호화된 비밀번호를 저장합니다.
+      name,confirm,role // 암호화된 비밀번호를 저장합니다.
     },
   });
 
@@ -47,6 +47,7 @@ router.post('/sign-up', async (req, res, next) => {
       userId: user.userId,
       email: user.email,
       name: user.name,
+      role: user.role
     },
   });
 });
@@ -59,13 +60,15 @@ router.post('/sign-in', async (req, res, next) => {
   const { email, password } = req.body;
   const user = await prisma.users.findFirst({ where: { email } });
 
-  
 
   if (!user)
     return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
   // 입력받은 사용자의 비밀번호와 데이터베이스에 저장된 비밀번호를 비교합니다.
   else if (!(await bcrypt.compare(password, user.password)))
     return res.status(401).json({ message: '비밀번호가 일치하지 않습니다.' });
+
+    
+
 
   // 로그인에 성공하면, 사용자의 userId를 바탕으로 토큰을 생성합니다.
   const token = jwt.sign(
@@ -75,6 +78,8 @@ router.post('/sign-in', async (req, res, next) => {
     'custom-secret-key',
     { expiresIn: '12h' }
   );
+
+
 
   // authotization 쿠키에 Berer 토큰 형식으로 JWT를 저장합니다.
   res.cookie('authorization', `Bearer ${token}`);
@@ -95,6 +100,7 @@ router.get('/users', authMiddleware, async (req, res, next) => {
       name: true,
       createdAt: true,
       updatedAt: true,
+      role: true,
     },
   });
 
