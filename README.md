@@ -41,3 +41,4 @@
     - Swagger는 코드나 주석에서 직접 API 문서를 자동으로 생성할 수 있습니다. 이는 개발자가 수동으로 문서를 업데이트하는 데 드는 시간과 노력을 크게 줄여 줍니다.
   
    erd cloud : https://www.erdcloud.com/d/LwezDtxDRnMoDM3PS
+   api 명세서 : https://www.notion.so/9-37cf27ed43764adca13f07603b386a01 (두번쨰 보시면 잇습니다)
